@@ -175,8 +175,8 @@ class HotspotProviderState extends State<HotspotProvider>
   /// focus to close the keyboard, and after the tour is done we
   /// put the focus back where it was.
   FocusNode? _lastFocusNode;
-  
-  Completer? _flowCompleter;
+
+  Completer<bool>? _flowCompleter;
 
   /// Convenience getter for the current flow sorted by order.
   List<HotspotTargetState> get currentFlow =>
@@ -184,7 +184,7 @@ class HotspotProviderState extends State<HotspotProvider>
         ..sort((a, b) => a.widget.order.compareTo(b.widget.order));
 
   /// Initiate a hotspot flow
-  Future<void> startFlow([String flow = 'main']) async {
+  Future<dynamic> startFlow([String flow = 'main']) async {
     /// Dismiss keyboard if open
     _lastFocusNode = FocusManager.instance.primaryFocus;
     _lastFocusNode?.unfocus();
@@ -205,11 +205,12 @@ class HotspotProviderState extends State<HotspotProvider>
       }
     });
 
-    final flowCompleter = Completer();
+    final flowCompleter = Completer<bool>();
 
     _flowCompleter = flowCompleter;
 
-    await flowCompleter.future;
+    final d = await flowCompleter.future;
+    return d;
   }
 
   /// Called when tapping the next button.
@@ -243,8 +244,8 @@ class HotspotProviderState extends State<HotspotProvider>
 
     setState(() => _visible = false);
 
-    _flowCompleter?.complete();
-    
+    _flowCompleter?.complete(true);
+
     /// Put the focus back where it was if we
     /// have a previously-saved focus node.
     _lastFocusNode?.requestFocus();
@@ -252,7 +253,27 @@ class HotspotProviderState extends State<HotspotProvider>
 
     /// don't animate to first tag on subsequent flow runs
     Future.delayed(widget.duration, () {
-      if(mounted) {
+      if (mounted) {
+        setState(() => _index = 0);
+      }
+    });
+  }
+
+  void dismissOnTapOutside() {
+    _pruneUnmountedTargets();
+
+    setState(() => _visible = false);
+
+    _flowCompleter?.complete(false);
+
+    /// Put the focus back where it was if we
+    /// have a previously-saved focus node.
+    _lastFocusNode?.requestFocus();
+    _lastFocusNode = null;
+
+    /// don't animate to first tag on subsequent flow runs
+    Future.delayed(widget.duration, () {
+      if (mounted) {
         setState(() => _index = 0);
       }
     });
@@ -349,7 +370,9 @@ class HotspotProviderState extends State<HotspotProvider>
           child: GestureDetector(
             onTap: widget.dismissibleSkrim
                 ? () {
-                    dismiss();
+                    print("_____------___");
+                    dismissOnTapOutside();
+                    // dismiss();
                   }
                 : null,
             child: TweenAnimationBuilder<Rect?>(

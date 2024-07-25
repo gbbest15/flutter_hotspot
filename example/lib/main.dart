@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      HotspotProvider.of(context).startFlow();
+      HotspotProvider.of(context).startFlow().then((value) => print(value));
     });
 
     super.initState();
