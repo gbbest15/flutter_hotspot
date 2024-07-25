@@ -184,7 +184,7 @@ class HotspotProviderState extends State<HotspotProvider>
         ..sort((a, b) => a.widget.order.compareTo(b.widget.order));
 
   /// Initiate a hotspot flow
-  Future<dynamic> startFlow([String flow = 'main']) async {
+  Future<bool> startFlow([String flow = 'main']) async {
     /// Dismiss keyboard if open
     _lastFocusNode = FocusManager.instance.primaryFocus;
     _lastFocusNode?.unfocus();
